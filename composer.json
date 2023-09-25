@@ -1,0 +1,17 @@
+{
+  "name": "alexeyplodenko/symfony-php-dumper",
+  "description": "The package provides a simple dump function, based on the Symfony VarDumper package, to output the variables and stop execution.",
+  "type": "library",
+  "keywords": ["debug", "dump"],
+  "homepage": "https://github.com/AlexeyPlodenko/php-dumper",
+  "license": "MIT",
+  "require": {
+    "php": ">=5.6",
+    "symfony/var-dumper": "^6.3"
+  },
+  "autoload": {
+    "files": [
+      "src/helpers.php"
+    ]
+  }
+}
