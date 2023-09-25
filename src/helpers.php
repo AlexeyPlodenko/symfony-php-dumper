@@ -4,13 +4,19 @@ use Symfony\Component\VarDumper\VarDumper;
 
 if (!function_exists('d')) {
     /**
-     * @param ...$args
+     * @param mixed ...$args
      * @return void
      */
     function d(...$args)
     {
-        $isCli = (php_sapi_name() === 'cli');
+        // run only in non-production and non-staging envs. So if someone would forget the d() in the code,
+        // it would not affect the runtime.
+        $appEnv = getenv('APP_ENV');
+        if ($appEnv === 'production' || $appEnv === 'staging') {
+            return;
+        }
 
+        $isCli = (php_sapi_name() === 'cli');
         foreach ($args as $arg) {
             VarDumper::dump($arg);
 
@@ -18,12 +24,12 @@ if (!function_exists('d')) {
         }
 
         // output backtrace
-        $ex = new Exception();
-        print_r($ex->getTraceAsString());
+        echo '<pre>';
+        debug_print_backtrace();
+        echo '</pre><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">' ,
+        'alexeyplodenko/symfony-php-dumper</a> PHP package.</small>';
 
         if (!$isCli) {
-            echo '</pre>';
-
             // output to the STDERR also
             foreach ($args as $arg) {
                 if (is_scalar($arg)) {
