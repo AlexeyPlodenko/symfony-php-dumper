@@ -22,10 +22,11 @@ if (!function_exists('d')) {
         }
 
         // send the HTTP 500 status header
-        header($_SERVER['SERVER_PROTOCOL'] . ' 500 Internal Server Error', true, 500);
+        $isCli = (php_sapi_name() === 'cli');
+        $httpProtocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP';
+        header($httpProtocol . ' 500 Internal Server Error', true, 500);
 
         // output each debug argument
-        $isCli = (php_sapi_name() === 'cli');
         foreach ($args as $arg) {
             VarDumper::dump($arg);
 
@@ -33,10 +34,14 @@ if (!function_exists('d')) {
         }
 
         // output backtrace
-        echo '<pre>';
+        if (!$isCli) {
+            echo '<pre>';
+        }
         debug_print_backtrace();
-        echo '</pre><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">' ,
-        'alexeyplodenko/symfony-php-dumper</a> PHP package.</small>';
+        if (!$isCli) {
+            echo '</pre><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">',
+            'alexeyplodenko/symfony-php-dumper</a> PHP package.</small>';
+        }
 
         if (!$isCli) {
             // output to the STDERR also
