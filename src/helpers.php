@@ -22,23 +22,33 @@ if (!function_exists('d')) {
         }
 
         // send the HTTP 500 status header
+        $isJson = isset($_SERVER['CONTENT_TYPE']) && strtolower($_SERVER['CONTENT_TYPE']) === 'application/json';
         $isCli = (php_sapi_name() === 'cli');
         $httpProtocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP';
         header($httpProtocol . ' 500 Internal Server Error', true, 500);
 
         // output each debug argument
-        foreach ($args as $arg) {
-            VarDumper::dump($arg);
+        if ($isJson) {
+            if (is_array($args)) {
+                $args['backtrace'] = debug_backtrace();
+            }
+            echo json_encode($args);
+        } else {
+            foreach ($args as $arg) {
+                VarDumper::dump($arg);
 
-            echo ($isCli ? "\n\n" : '<hr>');
+                echo($isCli ? "\n\n" : '<hr>');
+            }
         }
 
         // output backtrace
-        if (!$isCli) {
+        if (!$isCli && !$isJson) {
             echo '<pre>';
         }
-        debug_print_backtrace();
-        if (!$isCli) {
+        if (!$isJson) {
+            debug_print_backtrace();
+        }
+        if (!$isCli && !$isJson) {
             echo '</pre><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">',
             'alexeyplodenko/symfony-php-dumper</a> PHP package.</small>';
         }
