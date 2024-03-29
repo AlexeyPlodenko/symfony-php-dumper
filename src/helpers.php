@@ -22,7 +22,10 @@ if (!function_exists('d')) {
         }
 
         // send the HTTP 500 status header
-        $isJson = isset($_SERVER['CONTENT_TYPE']) && strtolower($_SERVER['CONTENT_TYPE']) === 'application/json';
+        $isJson = (
+               isset($_SERVER['CONTENT_TYPE']) && strtolower($_SERVER['CONTENT_TYPE']) === 'application/json'
+            || isset($_SERVER['HTTP_ACCEPT']) && strtolower($_SERVER['HTTP_ACCEPT']) === 'application/json'
+        );
         $isCli = (php_sapi_name() === 'cli');
         $httpProtocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP';
         header($httpProtocol . ' 500 Internal Server Error', true, 500);
