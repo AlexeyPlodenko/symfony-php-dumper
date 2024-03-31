@@ -23,7 +23,7 @@ if (!function_exists('d')) {
 
         // send the HTTP 500 status header
         $isJson = (
-               isset($_SERVER['CONTENT_TYPE']) && strtolower($_SERVER['CONTENT_TYPE']) === 'application/json'
+            isset($_SERVER['CONTENT_TYPE']) && strtolower($_SERVER['CONTENT_TYPE']) === 'application/json'
             || isset($_SERVER['HTTP_ACCEPT']) && strtolower($_SERVER['HTTP_ACCEPT']) === 'application/json'
         );
         $isCli = (php_sapi_name() === 'cli');
@@ -32,10 +32,7 @@ if (!function_exists('d')) {
 
         // output each debug argument
         if ($isJson) {
-            if (is_array($args)) {
-                $args['backtrace'] = debug_backtrace();
-            }
-            echo json_encode($args);
+            echo json_encode(count($args) === 1 ? $args[0] : $args);
         } else {
             foreach ($args as $arg) {
                 VarDumper::dump($arg);
@@ -57,6 +54,8 @@ if (!function_exists('d')) {
         }
 
         if (!$isCli) {
+            error_log(str_repeat('⌄', 80));
+
             // output to the STDERR also
             foreach ($args as $arg) {
                 if (is_scalar($arg)) {
@@ -65,6 +64,20 @@ if (!function_exists('d')) {
                     error_log(json_encode($arg));
                 }
             }
+
+            /** @source https://www.php.net/manual/en/function.debug-backtrace.php#112238 */
+            $ex = new Exception();
+            $trace = explode("\n", $ex->getTraceAsString());
+            $trace = array_reverse($trace); // reverse array to make steps line up chronologically
+            array_shift($trace); // remove {main}
+            array_pop($trace); // remove call to this method
+            if (count($trace) > 5) {
+                // show an ellipsis, instead of the rows, if there are too many
+                $trace = array_slice($trace, 0, 5);
+                $trace = array_merge($trace, ['...']);
+            }
+            error_log(implode("\n", $trace));
+
             error_log(str_repeat('^', 80));
         }
 
