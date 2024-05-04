@@ -22,40 +22,28 @@ if (!function_exists('d')) {
         }
 
         // send the HTTP 500 status header
-        $isJson = (
-            isset($_SERVER['CONTENT_TYPE']) && strtolower($_SERVER['CONTENT_TYPE']) === 'application/json'
-            || isset($_SERVER['HTTP_ACCEPT']) && strtolower($_SERVER['HTTP_ACCEPT']) === 'application/json'
-        );
         $isCli = (php_sapi_name() === 'cli');
         $httpProtocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP';
         header($httpProtocol . ' 500 Internal Server Error', true, 500);
 
         // output each debug argument
-        if ($isJson) {
-            echo json_encode(count($args) === 1 ? $args[0] : $args);
-        } else {
-            foreach ($args as $arg) {
-                VarDumper::dump($arg);
+        foreach ($args as $arg) {
+            VarDumper::dump($arg);
 
-                echo($isCli ? "\n\n" : '<hr>');
-            }
+            echo ($isCli ? "\n\n" : '<hr>');
         }
 
         // output backtrace
-        if (!$isCli && !$isJson) {
+        if (!$isCli) {
             echo '<pre>';
         }
-        if (!$isJson) {
-            debug_print_backtrace();
-        }
-        if (!$isCli && !$isJson) {
+        debug_print_backtrace();
+        if (!$isCli) {
             echo '</pre><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">',
             'alexeyplodenko/symfony-php-dumper</a> PHP package.</small>';
         }
 
         if (!$isCli) {
-            error_log(str_repeat('⌄', 80));
-
             // output to the STDERR also
             foreach ($args as $arg) {
                 if (is_scalar($arg)) {
@@ -65,6 +53,7 @@ if (!function_exists('d')) {
                 }
             }
 
+            // output the stack trace
             /** @source https://www.php.net/manual/en/function.debug-backtrace.php#112238 */
             $ex = new Exception();
             $trace = explode("\n", $ex->getTraceAsString());
