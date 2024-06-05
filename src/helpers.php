@@ -23,8 +23,10 @@ if (!function_exists('d')) {
 
         // send the HTTP 500 status header
         $isCli = (php_sapi_name() === 'cli');
-        $httpProtocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP';
-        header($httpProtocol . ' 500 Internal Server Error', true, 500);
+        if (!$isCli) {
+            $httpProtocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP';
+            header($httpProtocol . ' 500 Internal Server Error', true, 500);
+        }
 
         // output each debug argument
         foreach ($args as $arg) {
