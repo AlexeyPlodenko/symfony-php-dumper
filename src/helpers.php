@@ -24,7 +24,7 @@ if (!function_exists('d')) {
         // send the HTTP 500 status header
         $isCli = (php_sapi_name() === 'cli');
         if (!$isCli) {
-            $httpProtocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP';
+            $httpProtocol = $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP';
             header($httpProtocol . ' 500 Internal Server Error', true, 500);
         }
 
@@ -39,7 +39,44 @@ if (!function_exists('d')) {
         if (!$isCli) {
             echo '<pre>';
         }
-        debug_print_backtrace();
+
+        { // let's make framework related lines less bright
+            $mutedLines = [
+                '/var/www/vendor/laravel/framework/'
+            ];
+
+            ob_start();
+            debug_print_backtrace();
+            $backTrace = ob_get_clean();
+
+            $backTraceArray = explode("\n", $backTrace);
+            foreach ($backTraceArray as &$line) {
+                $isEsc = false;
+                foreach ($mutedLines as $mutedLine) {
+                    if (str_contains($line, $mutedLine)) {
+                        $isEsc = true;
+                        $line = '<span class="muted">' . htmlspecialchars($line) . '</span>';
+                        break;
+                    }
+                }
+
+                if (!$isEsc) {
+                    $line = htmlspecialchars($line);
+                }
+            }
+            unset($line);
+
+            ?><div id="backtrace" class="backtrace"><?= implode("\n", $backTraceArray) ?></div>
+            <style>
+                .backtrace .muted {
+                    color: #ccc;
+                }
+                .backtrace:hover .muted {
+                    color: inherit;
+                }
+            </style><?php
+        }
+
         if (!$isCli) {
             echo '</pre><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">',
             'alexeyplodenko/symfony-php-dumper</a> PHP package.</small>';
