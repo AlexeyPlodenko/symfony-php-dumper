@@ -70,6 +70,7 @@ if (!function_exists('d')) {
             <style>
                 .backtrace .muted {
                     color: #ccc;
+                    transition: color 0.1s ease;
                 }
                 .backtrace:hover .muted {
                     color: inherit;
