@@ -36,13 +36,10 @@ if (!function_exists('d')) {
         }
 
         // output backtrace
-        if (!$isCli) {
-            echo '<pre>';
-        }
 
         { // let's make framework related lines less bright
             $mutedLines = [
-                '/var/www/vendor/laravel/framework/'
+                    '/var/www/vendor/laravel/framework/'
             ];
 
             ob_start();
@@ -51,36 +48,43 @@ if (!function_exists('d')) {
 
             $backTraceArray = explode("\n", $backTrace);
             foreach ($backTraceArray as &$line) {
-                $isEsc = false;
+                $classes = ['symfony-php-dumper-highlight-on-hover'];
                 foreach ($mutedLines as $mutedLine) {
                     if (str_contains($line, $mutedLine)) {
-                        $isEsc = true;
-                        $line = '<span class="muted">' . htmlspecialchars($line) . '</span>';
+                        $classes[] = 'symfony-php-dumper-muted';
                         break;
                     }
                 }
 
-                if (!$isEsc) {
-                    $line = htmlspecialchars($line);
-                }
+                $lineEsc = htmlspecialchars($line);
+                $classesStr = implode(' ', $classes);
+                $line = "<div class=\"$classesStr\">$lineEsc</div>";
             }
             unset($line);
 
-            ?><div id="backtrace" class="backtrace"><?= implode("\n", $backTraceArray) ?></div>
+            ?><div class="symfony-php-dumper-backtrace"><?= implode('', $backTraceArray) ?></div>
             <style>
-                .backtrace .muted {
+                .symfony-php-dumper-backtrace,
+                .symfony-php-dumper-author {
+                    /* uses same font as in the Symfony\Component\VarDumper package, to follow the styling */
+                    font: 12px Menlo, Monaco, Consolas, monospace;
+                }
+                .symfony-php-dumper-muted {
                     color: #ccc;
                     transition: color 0.1s ease;
                 }
-                .backtrace:hover .muted {
+                .symfony-php-dumper-backtrace:hover .symfony-php-dumper-muted {
                     color: inherit;
+                }
+                .symfony-php-dumper-highlight-on-hover:hover {
+                    background-color: #eee;
                 }
             </style><?php
         }
 
         if (!$isCli) {
-            echo '</pre><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">',
-            'alexeyplodenko/symfony-php-dumper</a> PHP package.</small>';
+            echo '<p class="symfony-php-dumper-author"><small>Outputted by the <a href="https://github.com/AlexeyPlodenko/symfony-php-dumper">',
+            'alexeyplodenko/symfony-php-dumper</a> PHP package.</small></p>';
         }
 
         if (!$isCli) {
